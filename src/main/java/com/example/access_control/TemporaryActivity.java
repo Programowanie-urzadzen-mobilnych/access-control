@@ -8,8 +8,9 @@ import android.view.View;
 import android.widget.Button;
 
 public class TemporaryActivity extends AppCompatActivity {
-    //tymczasowa klasa żeby wracać do ekranu logowania - dopóki nie bedzie zrobionego symulatora
+    //tymczasowa klasa żeby wracać do ekranu logowania/przechodzić do zmiany hasła - dopóki nie bedzie zrobionego symulatora
     private Button button;
+    private Button btnChangePassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,11 +18,20 @@ public class TemporaryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_temporary);
 
         button = (Button)findViewById(R.id.buttonBack);
+        btnChangePassword = (Button)findViewById(R.id.buttonChangeLoginInformationForm);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(TemporaryActivity.this, LoginMain.class);
+                startActivity(intent);
+            }
+        });
+
+        btnChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(TemporaryActivity.this, ChangePassword.class);
                 startActivity(intent);
             }
         });
