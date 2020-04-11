@@ -9,6 +9,8 @@ public class MyLoginModel{
     public ArrayList<MyObject> list;
 
     static public class MyObject {
+        @SerializedName("ID")
+        public String id_;
         @SerializedName("Login")
         public String login_;
         @SerializedName("Password")

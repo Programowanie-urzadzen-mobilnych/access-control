@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -24,18 +25,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-
+//TODO - RZECZY DO POPRAWIENIA/DOROBIENIA/PÓŹNIEJSZEGO UŻYCIA
 public class ChangePassword extends AppCompatActivity {
 
-    private Button btnChangePassword;
-    private Button btnGoBack;
-    private EditText OldLogin;
-    private EditText OldPassword;
-    private EditText NewLogin;
-    private EditText NewPassword;
-    private EditText NewPasswordConfirmation;
-    private String sensorUSERLOGIN;
-    private String sensorUSERPASSWORD;
+    private Button btnChangePassword,btnGoBack;
+    private EditText OldLogin,OldPassword,NewLogin,NewPassword,NewPasswordConfirmation;
+    private String sensorUSERLOGIN,sensorUSERPASSWORD, userADMIN_LOG,userADMIN_PASSWD, userUSER_LOG,userUSER_PASSWD;
+    private TextView txtView;
+    private String USER_ID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +46,13 @@ public class ChangePassword extends AppCompatActivity {
         NewPasswordConfirmation = (EditText)findViewById(R.id.newPassword2);
         btnChangePassword = (Button)findViewById(R.id.buttonChangeLoginInformation);
         btnGoBack = (Button)findViewById(R.id.buttonGoBack);
+
+        USER_ID = getIntent().getStringExtra("USER_ID");
+        txtView = (TextView)findViewById(R.id.txtUserID);
+        if(USER_ID.equals("1"))
+            txtView.setText("ADMIN");
+        else
+            txtView.setText("NORMAL USER");
 
         btnChangePassword.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,6 +75,7 @@ public class ChangePassword extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
+                intent.putExtra("USER_ID",USER_ID);
                 startActivity(intent);
             }
         });
@@ -80,16 +85,23 @@ public class ChangePassword extends AppCompatActivity {
         //method to validate if entered value are correct and if so, then update login information
         //parsing json to model in MyLoginModel
 
-        readJsonFromFile();//TODO zrobić żeby jak nie ma dostępu do pliku (bo np user się rozłączył z czujnikiem ale
+        int id;
+        if(USER_ID.equals("1"))
+            id=0;
+        else
+            id=1;
+
+        readJsonFromFile(id);//TODO zrobić żeby jak nie ma dostępu do pliku (bo np user się rozłączył z czujnikiem ale
         //TODO nie wylogował to wtedy tworzy tymczasowy plik, który nadpisze plik z pasami kiedy użytkownik znowu się połączy)
 
         if((oldLogin.equals(sensorUSERLOGIN)) && (oldPassword.equals(sensorUSERPASSWORD))) {
             if(!newLogin.equals("") || !newPassword.equals("")){
                 if(newPassword.equals(confirmPassword)){
-                    ChangeCredentials(newLogin, newPassword);
+                    ChangeCredentials(id,newLogin, newPassword);
                     Toast.makeText(this, "Login information were changed",
                             Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
+                    intent.putExtra("USER_ID",USER_ID);
                     startActivity(intent);
                 }
                 else {
@@ -124,7 +136,7 @@ public class ChangePassword extends AppCompatActivity {
         }
     }
 
-    private void readJsonFromFile(){
+    private void readJsonFromFile(int id){
         File file = new File(this.getFilesDir(), "login_information.json");
         FileInputStream fileInputStream = null;
         try {
@@ -134,22 +146,55 @@ public class ChangePassword extends AppCompatActivity {
         }
         String myJson = inputStreamToString(fileInputStream);//reading json file
         MyLoginModel myModel = new Gson().fromJson(myJson, MyLoginModel.class);//converting json string to model
-        sensorUSERLOGIN = myModel.list.get(0).login_;//assigning login value from model
-        sensorUSERPASSWORD = myModel.list.get(0).password_;//assigning password value from model
+        sensorUSERLOGIN = myModel.list.get(id).login_;//assigning login value from model
+        sensorUSERPASSWORD = myModel.list.get(id).password_;//assigning password value from model
+        //TODO poszukać czy da się to rozwiązać inaczej - żeby nie było trzech zestawów haseł w trzech różnych zmiennych
+        userADMIN_LOG = myModel.list.get(0).login_;
+        userUSER_LOG = myModel.list.get(1).login_;
+        userADMIN_PASSWD= myModel.list.get(0).password_;
+        userUSER_PASSWD = myModel.list.get(1).password_;
     }
 
-    private void ChangeCredentials(String newLogin, String newPassword) throws IOException {
+    private void ChangeCredentials(int id, String newLogin, String newPassword) throws IOException {
         //method to update login information file - set new login and password
+
         String filename = "login_information.json";
-        String fileContents = "{\n" +
-                "  \"Login_Info\":\n" +
-                "  [\n" +
-                "    {\n" +
-                "      \"Login\": \""+newLogin+"\",\n" +
-                "      \"Password\": \""+newPassword+"\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+        String fileContents;
+        if(id==0){
+            fileContents = "{\n" +
+                    "  \"Login_Info\":\n" +
+                    "  [\n" +
+                    "    {\n" +
+                    "      \"ID\": \"1\",\n" +
+                    "      \"Login\": \""+newLogin+"\",\n" +
+                    "      \"Password\": \""+newPassword+"\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"ID\": \"2\",\n" +
+                    "      \"Login\": \""+userUSER_LOG+"\",\n" +
+                    "      \"Password\": \""+userUSER_PASSWD+"\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+        }
+        else {
+            fileContents = "{\n" +
+                    "  \"Login_Info\":\n" +
+                    "  [\n" +
+                    "    {\n" +
+                    "      \"ID\": \"1\",\n" +
+                    "      \"Login\": \""+userADMIN_LOG+"\",\n" +
+                    "      \"Password\": \""+userADMIN_PASSWD+"\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"ID\": \"2\",\n" +
+                    "      \"Login\": \""+newLogin+"\",\n" +
+                    "      \"Password\": \""+newPassword+"\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+        }
+
         FileOutputStream outputStream;
 
         try {

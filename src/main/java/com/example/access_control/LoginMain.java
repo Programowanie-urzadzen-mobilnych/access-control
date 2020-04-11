@@ -30,10 +30,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-
+//TODO - RZECZY DO POPRAWIENIA/DOROBIENIA/PÓŹNIEJSZEGO UŻYCIA
 public class LoginMain extends AppCompatActivity {
 
-    private String sensorUSERLOGIN="123", sensorUSERPASSWORD="456";//TODO dopóki się z niczym nie łączymy - trzeba dodać
+    private String sensorUSERID_ADMIN="1", sensorUSERID="2";
+    private String sensorUSERLOGIN_ADMIN="123", sensorUSERLOGIN="qwe", sensorUSERPASSWORD_ADMIN="456",sensorUSERPASSWORD="asd";
+    //TODO dopóki się z niczym nie łączymy - trzeba dodać
     //TODO jeszcze szyfrowanie i nie porównywać bezpośrednio plaintext, ale to już inna funkcjonalność w gancie :P
     //TODO niżej przypisujemy z modelu MyLoginModel wartości do tych zmiennych
 
@@ -83,8 +85,14 @@ public class LoginMain extends AppCompatActivity {
 
         readJsonFromFile();
 
-        if((userLogin.equals(sensorUSERLOGIN)) && (userPassword.equals(sensorUSERPASSWORD))){
+        if((userLogin.equals(sensorUSERLOGIN_ADMIN)) && (userPassword.equals(sensorUSERPASSWORD_ADMIN))){
             Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
+            intent.putExtra("USER_ID",sensorUSERID_ADMIN);
+            startActivity(intent);
+        }
+        else if((userLogin.equals(sensorUSERLOGIN))&&(userPassword.equals(sensorUSERPASSWORD))){
+            Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
+            intent.putExtra("USER_ID",sensorUSERID);
             startActivity(intent);
         }
         else{
@@ -146,8 +154,14 @@ public class LoginMain extends AppCompatActivity {
                     "  \"Login_Info\":\n" +
                     "  [\n" +
                     "    {\n" +
+                    "      \"ID\": \"1\",\n" +
                     "      \"Login\": \"Admin\",\n" +
                     "      \"Password\": \"Admin\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"ID\": \"2\",\n" +
+                    "      \"Login\": \"User\",\n" +
+                    "      \"Password\": \"User\"\n" +
                     "    }\n" +
                     "  ]\n" +
                     "}";
@@ -176,8 +190,13 @@ public class LoginMain extends AppCompatActivity {
         }
         String myJson = inputStreamToString(fileInputStream);//parsing json file using method inputStreamToString
         MyLoginModel myModel = new Gson().fromJson(myJson, MyLoginModel.class);//converting json string to model
-        sensorUSERLOGIN = myModel.list.get(0).login_;//assigning login value from model to variable
-        sensorUSERPASSWORD = myModel.list.get(0).password_;//assigning password value from model to variable
+        sensorUSERID_ADMIN = myModel.list.get(0).id_;//assigning first id value from model to variable
+        sensorUSERLOGIN_ADMIN = myModel.list.get(0).login_;//assigning first login value from model to variable
+        sensorUSERPASSWORD_ADMIN = myModel.list.get(0).password_;//assigning first password value from model to variable
+        ///////TODO poszukać czy da się to rozwiązać inaczej - żeby nie było dwóch zestawów haseł w dwóch różnych zmiennych
+        sensorUSERID = myModel.list.get(1).id_;//assigning second id value from model to variable
+        sensorUSERLOGIN = myModel.list.get(1).login_;//assigning second login value from model to variable
+        sensorUSERPASSWORD = myModel.list.get(1).password_;//assigning second password value from model to variable
     }
 ///////////////////////////////////////////////////////////////////
     public String inputStreamToString(InputStream inputStream) {
@@ -238,7 +257,7 @@ public class LoginMain extends AppCompatActivity {
 }
 ////////////////////////////////////////////////////////////////////currently not used
 //doesn't work - null object exception
-    private void _readJSON(){//próba odczytania i sparsowania jsona (dodanie do arraylisty hashu z danymi logowania)
+    private void _readJSON(){//TODO próba odczytania i sparsowania jsona (dodanie do arraylisty hashu z danymi logowania)
         try {
             JSONObject obj = new JSONObject(loadJSONFromAsset(LoginMain.this));
             JSONArray m_jArry = obj.getJSONArray("Login_Info");
