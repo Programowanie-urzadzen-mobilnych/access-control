@@ -119,7 +119,7 @@ public class ChangePassword extends AppCompatActivity {
             e.printStackTrace();
         }
         Writer output = null;
-        File file = new File("C:\\TEST_ANDROID\\android-app\\access-control\\src\\main\\res\\login_information2.json");
+        File file = new File("C:\\TEST_ANDROID\\login_information.json");
         output = new BufferedWriter(new FileWriter(file));
         output.write(object.toString());
         output.close();
