@@ -33,9 +33,9 @@ import java.util.HashMap;
 
 public class LoginMain extends AppCompatActivity {
 
-    private String sensorUSERLOGIN="123", sensorUSERPASSWORD="456";//dopóki się z niczym nie łączymy - trzeba dodać
-    //jeszcze szyfrowanie i nie porównywać bezpośrednio plaintext, ale to już inna funkcjonalność w gancie :P
-    //niżej przypisujemy z modelu MyLoginModel wartości do tych zmiennych
+    private String sensorUSERLOGIN="123", sensorUSERPASSWORD="456";//TODO dopóki się z niczym nie łączymy - trzeba dodać
+    //TODO jeszcze szyfrowanie i nie porównywać bezpośrednio plaintext, ale to już inna funkcjonalność w gancie :P
+    //TODO niżej przypisujemy z modelu MyLoginModel wartości do tych zmiennych
 
     private EditText Login;
     private EditText Password;
@@ -57,39 +57,8 @@ public class LoginMain extends AppCompatActivity {
         Log_In = (Button) findViewById(R.id.button_LogIn);
         AttemptsLeft.setText("Number of attempts left: " + String.valueOf(counter));
 
+        temporaryCreateJson();//TODO zakomentować gdy uzyskamy dostęp do czujnika - zrobić bedzie trzeba inna metodę
 
-        ////////////////////////////////
-        String filename = "config.json";
-        String fileContents = "{\n" +
-                "  \"Login_Info\":\n" +
-                "  [\n" +
-                "    {\n" +
-                "      \"Login\": \"Admin\",\n" +
-                "      \"Password\": \"Admin\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
-        FileOutputStream outputStream;
-
-        try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(fileContents.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        File file = new File(this.getFilesDir(), "config.json");
-        FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        String myJson = inputStreamToString(fileInputStream);//reading json file
-        MyLoginModel myModel = new Gson().fromJson(myJson, MyLoginModel.class);//converting json string to model
-        sensorUSERLOGIN = myModel.list.get(0).login_;//assigning login value from model
-        sensorUSERPASSWORD = myModel.list.get(0).password_;//assigning password value from model
         ////////////////////////////////parsing json to model in MyLoginModel
         //readJSON();
         /*String myJson=inputStreamToString(this.getResources().openRawResource(R.raw.login_information));//reading json file
@@ -104,17 +73,15 @@ public class LoginMain extends AppCompatActivity {
                 validate(Login.getText().toString(), Password.getText().toString());
                 //isExternalStorageReadable();
                 //isExternalStorageWritable();
-                //ReadFile();
             }
         });
-        //Password.setTransformationMethod(PasswordTransformationMethod.getInstance());//ponoć dobra praktyka użyć tego do hasła
+        //Password.setTransformationMethod(PasswordTransformationMethod.getInstance());//TODO ponoć dobra praktyka użyć tego do hasła
     }
 
     private void validate(String userLogin, String userPassword){
         //check if credentials passed by user equals to what is stored in sensor, if so then go to another activity
 
-        //sensonUSERLOGIN = formList.get(0).get("Login");
-        //sensorUSERPASSWORD = formList.get(0).get("Password");
+        readJsonFromFile();
 
         if((userLogin.equals(sensorUSERLOGIN)) && (userPassword.equals(sensorUSERPASSWORD))){
             Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
@@ -126,7 +93,7 @@ public class LoginMain extends AppCompatActivity {
             Toast.makeText(this, "Incorrect login or password", Toast.LENGTH_SHORT).show();
             if(counter==0)
             {//if user used all tries then block login button for X amount of time (currently 5 seconds)
-                //zrobić żeby nawet po zamknięciu aplikacji i jej ponownym uruchomieniu nadal odliczało czas
+                //TODO zrobić żeby nawet po zamknięciu aplikacji i jej ponownym uruchomieniu nadal odliczało czas
                 Log_In.setEnabled(false);
                 Toast.makeText(this, "Login functionality is disabled for 5 seconds", Toast.LENGTH_LONG).show();
                 new Handler().postDelayed(new Runnable() {
@@ -166,66 +133,112 @@ public class LoginMain extends AppCompatActivity {
             Toast.makeText(this, "NIE MOŻNA CZYTAC", Toast.LENGTH_LONG).show();
         }
     }
-
 ///////////////////////////////////////////////////////////////////
-    public void ReadFile (){
-        try {
-            File yourFile = new File(Environment.getExternalStorageDirectory(), "/sdcard/login_information.txt");
-            FileInputStream stream = new FileInputStream(yourFile);
-            String jsonStr = null;
+    public void temporaryCreateJson(){
+    //TODO TYMCZASOWA METODA DO ROBIENIA PLIKU JSON (PRZY PIERWSZYM URUCHOMIENIU PROGRAMU (TAKIM PIERWSZYM PIERWSZYM - POTEM
+        // TODO KIEDY URUCHAMIASZ ZNOWU TO PLIK BEDZIE ISTNIAL I SIE NIE WYKONA) DOPÓKI NIE BEDZIE ZROBIONY SYMULATOR
+
+        File file = new File(this.getFilesDir(), "login_information.json");
+        if(!file.exists()) {
+            // create file (again - we use this method only till we get an access to sensor)
+            String filename = "login_information.json";
+            String fileContents = "{\n" +
+                    "  \"Login_Info\":\n" +
+                    "  [\n" +
+                    "    {\n" +
+                    "      \"Login\": \"Admin\",\n" +
+                    "      \"Password\": \"Admin\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+            FileOutputStream outputStream;
+
             try {
-                FileChannel fc = stream.getChannel();
-                MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-                jsonStr = Charset.defaultCharset().decode(bb).toString();
+                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                outputStream.write(fileContents.getBytes());
+                outputStream.close();
             }
-            catch(Exception e){
+            catch (Exception e) {
                 e.printStackTrace();
             }
-            finally {
-                stream.close();
-            }
-            JSONObject jsonObj = new JSONObject(jsonStr);
-
-            // Getting data JSON Array nodes
-            JSONArray data  = jsonObj.getJSONArray("Login_Info");
-
-            // looping through All nodes
-            for (int i = 0; i < data.length(); i++) {
-                JSONObject c = data.getJSONObject(i);
-
-                String _login = c.getString("Login");
-                String _password = c.getString("Password");
-
-                // tmp hashmap for single node
-                parsedData = new HashMap<String, String>();
-
-                // adding each child node to HashMap key => value
-                parsedData.put("Login", _login);
-                parsedData.put("Password", _password);
-                //Toast.makeText(this, _login, Toast.LENGTH_LONG).show();
-                //Toast.makeText(this, _password, Toast.LENGTH_LONG).show();
-
-                // do what do you want on your interface
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 ///////////////////////////////////////////////////////////////////
+    public void readJsonFromFile(){
+        //method to put json file into InputStream of json parser (public string inputStreamToString())
+        File file = new File(this.getFilesDir(), "login_information.json");
+        FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(file);
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        String myJson = inputStreamToString(fileInputStream);//parsing json file using method inputStreamToString
+        MyLoginModel myModel = new Gson().fromJson(myJson, MyLoginModel.class);//converting json string to model
+        sensorUSERLOGIN = myModel.list.get(0).login_;//assigning login value from model to variable
+        sensorUSERPASSWORD = myModel.list.get(0).password_;//assigning password value from model to variable
+    }
+///////////////////////////////////////////////////////////////////
     public String inputStreamToString(InputStream inputStream) {
-        //method to read json file and later save to a model
+    //method to read and parse json file and later save it to a model
         try {
             byte[] bytes = new byte[inputStream.available()];
             inputStream.read(bytes, 0, bytes.length);
             String json = new String(bytes);
             return json;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             return null;
         }
     }
-////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////currently not used
+    public void ReadFile (){
+    try {
+        File yourFile = new File(Environment.getExternalStorageDirectory(), "/sdcard/login_information.txt");
+        FileInputStream stream = new FileInputStream(yourFile);
+        String jsonStr = null;
+        try {
+            FileChannel fc = stream.getChannel();
+            MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+            jsonStr = Charset.defaultCharset().decode(bb).toString();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            stream.close();
+        }
+        JSONObject jsonObj = new JSONObject(jsonStr);
+
+        // Getting data JSON Array nodes
+        JSONArray data  = jsonObj.getJSONArray("Login_Info");
+
+        // looping through All nodes
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject c = data.getJSONObject(i);
+
+            String _login = c.getString("Login");
+            String _password = c.getString("Password");
+
+            // tmp hashmap for single node
+            parsedData = new HashMap<String, String>();
+
+            // adding each child node to HashMap key => value
+            parsedData.put("Login", _login);
+            parsedData.put("Password", _password);
+            //Toast.makeText(this, _login, Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, _password, Toast.LENGTH_LONG).show();
+
+            // do what do you want on your interface
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+////////////////////////////////////////////////////////////////////currently not used
 //doesn't work - null object exception
-    private void readJSON(){//próba odczytania i sparsowania jsona (dodanie do arraylisty hashu z danymi logowania)
+    private void _readJSON(){//próba odczytania i sparsowania jsona (dodanie do arraylisty hashu z danymi logowania)
         try {
             JSONObject obj = new JSONObject(loadJSONFromAsset(LoginMain.this));
             JSONArray m_jArry = obj.getJSONArray("Login_Info");
@@ -249,7 +262,6 @@ public class LoginMain extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
     public String loadJSONFromAsset(Context context) {
         //as the name suggest, this method load JSON from asset directory in access-control
         String json = null;

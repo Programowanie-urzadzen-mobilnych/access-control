@@ -8,7 +8,8 @@ import android.view.View;
 import android.widget.Button;
 
 public class TemporaryActivity extends AppCompatActivity {
-    //tymczasowa klasa żeby wracać do ekranu logowania/przechodzić do zmiany hasła - dopóki nie bedzie zrobionego symulatora
+    //TODO tymczasowa klasa żeby wracać do ekranu logowania/przechodzić do zmiany hasła -
+    // TODO dopóki nie bedzie zrobionego symulatora
     private Button button;
     private Button btnChangePassword;
 
