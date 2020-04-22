@@ -25,6 +25,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 //TODO - RZECZY DO POPRAWIENIA/DOROBIENIA/PÓŹNIEJSZEGO UŻYCIA
 public class ChangePassword extends AppCompatActivity {
 
@@ -94,6 +99,10 @@ public class ChangePassword extends AppCompatActivity {
         readJsonFromFile(id);//TODO zrobić żeby jak nie ma dostępu do pliku (bo np user się rozłączył z czujnikiem ale
         //TODO nie wylogował to wtedy tworzy tymczasowy plik, który nadpisze plik z pasami kiedy użytkownik znowu się połączy)
 
+        oldPassword = Hash(oldPassword);
+        confirmPassword = Hash(confirmPassword);
+        newPassword = Hash(newPassword);
+
         if((oldLogin.equals(sensorUSERLOGIN)) && (oldPassword.equals(sensorUSERPASSWORD))) {
             if(!newLogin.equals("") || !newPassword.equals("")){
                 if(newPassword.equals(confirmPassword)){
@@ -153,6 +162,26 @@ public class ChangePassword extends AppCompatActivity {
         userUSER_LOG = myModel.list.get(1).login_;
         userADMIN_PASSWD= myModel.list.get(0).password_;
         userUSER_PASSWD = myModel.list.get(1).password_;
+    }
+
+    public String Hash(String stringToHash){
+        //hashing method - more secure way of storing passwords/logins than encryption because its one way function
+        //TODO - narazie jest MD5, ale lepszy jest ponoć "PBKDF2WithHmacSHA1"
+        MessageDigest digest;
+        try
+        {
+            digest = MessageDigest.getInstance("MD5");
+            digest.update(stringToHash.getBytes(Charset.forName("US-ASCII")),0,stringToHash.length());
+            byte[] magnitude = digest.digest();
+            BigInteger bi = new BigInteger(1, magnitude);
+            String hash = String.format("%0" + (magnitude.length << 1) + "x", bi);
+            return hash;
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     private void ChangeCredentials(int id, String newLogin, String newPassword) throws IOException {

@@ -24,17 +24,30 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
 //TODO - RZECZY DO POPRAWIENIA/DOROBIENIA/PÓŹNIEJSZEGO UŻYCIA
 public class LoginMain extends AppCompatActivity {
 
     private String sensorUSERID_ADMIN="1", sensorUSERID="2";
-    private String sensorUSERLOGIN_ADMIN="123", sensorUSERLOGIN="qwe", sensorUSERPASSWORD_ADMIN="456",sensorUSERPASSWORD="asd";
+    private String sensorUSERLOGIN_ADMIN="Admin", sensorUSERLOGIN="User",
+            sensorUSERPASSWORD_ADMIN="Admin",sensorUSERPASSWORD="User";
     //TODO dopóki się z niczym nie łączymy - trzeba dodać
     //TODO jeszcze szyfrowanie i nie porównywać bezpośrednio plaintext, ale to już inna funkcjonalność w gancie :P
     //TODO niżej przypisujemy z modelu MyLoginModel wartości do tych zmiennych
@@ -59,7 +72,9 @@ public class LoginMain extends AppCompatActivity {
         Log_In = (Button) findViewById(R.id.button_LogIn);
         AttemptsLeft.setText("Number of attempts left: " + String.valueOf(counter));
 
-        temporaryCreateJson();//TODO zakomentować gdy uzyskamy dostęp do czujnika - zrobić bedzie trzeba inna metodę
+        sensorUSERPASSWORD_ADMIN = Hash(sensorUSERPASSWORD_ADMIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
+        sensorUSERPASSWORD = Hash(sensorUSERPASSWORD);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
+        temporaryCreateJson(sensorUSERLOGIN_ADMIN,sensorUSERPASSWORD_ADMIN,sensorUSERLOGIN,sensorUSERPASSWORD);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie tworzy plik na "sztywno" z danymi logowania
 
         ////////////////////////////////parsing json to model in MyLoginModel
         //readJSON();
@@ -84,6 +99,7 @@ public class LoginMain extends AppCompatActivity {
         //check if credentials passed by user equals to what is stored in sensor, if so then go to another activity
 
         readJsonFromFile();
+        userPassword = Hash(userPassword);//thanks to this, we are comparing two hashes if they are equal
 
         if((userLogin.equals(sensorUSERLOGIN_ADMIN)) && (userPassword.equals(sensorUSERPASSWORD_ADMIN))){
             Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
@@ -142,26 +158,46 @@ public class LoginMain extends AppCompatActivity {
         }
     }
 ///////////////////////////////////////////////////////////////////
-    public void temporaryCreateJson(){
+    public String Hash(String stringToHash)
+    {//hashing method - more secure way of storing passwords/logins than encryption because its one way function
+        //TODO - narazie jest MD5, ale lepszy jest ponoć "PBKDF2WithHmacSHA1"
+        MessageDigest digest;
+        try
+        {
+            digest = MessageDigest.getInstance("MD5");
+            digest.update(stringToHash.getBytes(Charset.forName("US-ASCII")),0,stringToHash.length());
+            byte[] magnitude = digest.digest();
+            BigInteger bi = new BigInteger(1, magnitude);
+            String hash = String.format("%0" + (magnitude.length << 1) + "x", bi);
+            return hash;
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            e.printStackTrace();
+        }
+        return "";
+    }
+///////////////////////////////////////////////////////////////////
+    public void temporaryCreateJson(String AdminLogin, String AdminPasswd, String UserLogin, String UserPasswd){
     //TODO TYMCZASOWA METODA DO ROBIENIA PLIKU JSON (PRZY PIERWSZYM URUCHOMIENIU PROGRAMU (TAKIM PIERWSZYM PIERWSZYM - POTEM
         // TODO KIEDY URUCHAMIASZ ZNOWU TO PLIK BEDZIE ISTNIAL I SIE NIE WYKONA) DOPÓKI NIE BEDZIE ZROBIONY SYMULATOR
 
         File file = new File(this.getFilesDir(), "login_information.json");
         if(!file.exists()) {
-            // create file (again - we use this method only till we get an access to sensor)
+            // TODO - towrzenie pliku na emulatorze telefonu - używamy tej metody całej dopóty nie będziemy mieć dostępu do czujnika
             String filename = "login_information.json";
             String fileContents = "{\n" +
                     "  \"Login_Info\":\n" +
                     "  [\n" +
                     "    {\n" +
                     "      \"ID\": \"1\",\n" +
-                    "      \"Login\": \"Admin\",\n" +
-                    "      \"Password\": \"Admin\"\n" +
+                    "      \"Login\": \""+AdminLogin+"\",\n" +
+                    "      \"Password\": \""+AdminPasswd+"\"\n" +
                     "    },\n" +
                     "    {\n" +
                     "      \"ID\": \"2\",\n" +
-                    "      \"Login\": \"User\",\n" +
-                    "      \"Password\": \"User\"\n" +
+                    "      \"Login\": \""+UserLogin+"\",\n" +
+                    "      \"Password\": \""+UserPasswd+"\"\n" +
                     "    }\n" +
                     "  ]\n" +
                     "}";
