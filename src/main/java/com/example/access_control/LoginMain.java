@@ -73,6 +73,7 @@ public class LoginMain extends AppCompatActivity {
         AttemptsLeft.setText("Number of attempts left: " + String.valueOf(counter));
 
         try {
+            sensorUSERLOGIN_ADMIN = Hash(sensorUSERLOGIN_ADMIN, sensorUSERLOGIN_ADMIN);
             sensorUSERPASSWORD_ADMIN = Hash(sensorUSERPASSWORD_ADMIN, sensorUSERLOGIN_ADMIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -80,6 +81,7 @@ public class LoginMain extends AppCompatActivity {
             e.printStackTrace();
         }
         try {
+            sensorUSERLOGIN = Hash(sensorUSERLOGIN, sensorUSERLOGIN);
             sensorUSERPASSWORD = Hash(sensorUSERPASSWORD, sensorUSERLOGIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -117,6 +119,7 @@ public class LoginMain extends AppCompatActivity {
         //check if credentials passed by user equals to what is stored in sensor, if so then go to another activity
 
         readJsonFromFile();
+        userLogin = Hash(userLogin,userLogin);
         userPassword = Hash(userPassword, userLogin);//thanks to this, we are comparing two hashes if they are equal
 
         if((userLogin.equals(sensorUSERLOGIN_ADMIN)) && (userPassword.equals(sensorUSERPASSWORD_ADMIN))){

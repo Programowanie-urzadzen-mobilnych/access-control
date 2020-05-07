@@ -107,7 +107,8 @@ public class ChangePassword extends AppCompatActivity {
 
         readJsonFromFile(id);//TODO zrobić żeby jak nie ma dostępu do pliku (bo np user się rozłączył z czujnikiem ale
         //TODO nie wylogował to wtedy tworzy tymczasowy plik, który nadpisze plik z pasami kiedy użytkownik znowu się połączy)
-
+        oldLogin = Hash(oldLogin,oldLogin);
+        newLogin = Hash(newLogin,newLogin);
         oldPassword = Hash(oldPassword, oldLogin);
         newPassword = Hash(newPassword, newLogin);
         confirmPassword = Hash(confirmPassword, newLogin);
