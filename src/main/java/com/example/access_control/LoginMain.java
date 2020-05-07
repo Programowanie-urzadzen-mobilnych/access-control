@@ -72,8 +72,20 @@ public class LoginMain extends AppCompatActivity {
         Log_In = (Button) findViewById(R.id.button_LogIn);
         AttemptsLeft.setText("Number of attempts left: " + String.valueOf(counter));
 
-        sensorUSERPASSWORD_ADMIN = Hash(sensorUSERPASSWORD_ADMIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
-        sensorUSERPASSWORD = Hash(sensorUSERPASSWORD);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
+        try {
+            sensorUSERPASSWORD_ADMIN = Hash(sensorUSERPASSWORD_ADMIN, sensorUSERLOGIN_ADMIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
+        try {
+            sensorUSERPASSWORD = Hash(sensorUSERPASSWORD, sensorUSERLOGIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
         temporaryCreateJson(sensorUSERLOGIN_ADMIN,sensorUSERPASSWORD_ADMIN,sensorUSERLOGIN,sensorUSERPASSWORD);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie tworzy plik na "sztywno" z danymi logowania
 
         ////////////////////////////////parsing json to model in MyLoginModel
@@ -87,7 +99,13 @@ public class LoginMain extends AppCompatActivity {
         Log_In.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                validate(Login.getText().toString(), Password.getText().toString());
+                try {
+                    validate(Login.getText().toString(), Password.getText().toString());
+                } catch (InvalidKeySpecException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
                 //isExternalStorageReadable();
                 //isExternalStorageWritable();
             }
@@ -95,11 +113,11 @@ public class LoginMain extends AppCompatActivity {
         //Password.setTransformationMethod(PasswordTransformationMethod.getInstance());//TODO ponoć dobra praktyka użyć tego do hasła
     }
 
-    private void validate(String userLogin, String userPassword){
+    private void validate(String userLogin, String userPassword) throws InvalidKeySpecException, NoSuchAlgorithmException {
         //check if credentials passed by user equals to what is stored in sensor, if so then go to another activity
 
         readJsonFromFile();
-        userPassword = Hash(userPassword);//thanks to this, we are comparing two hashes if they are equal
+        userPassword = Hash(userPassword, userLogin);//thanks to this, we are comparing two hashes if they are equal
 
         if((userLogin.equals(sensorUSERLOGIN_ADMIN)) && (userPassword.equals(sensorUSERPASSWORD_ADMIN))){
             Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
@@ -158,14 +176,28 @@ public class LoginMain extends AppCompatActivity {
         }
     }
 ///////////////////////////////////////////////////////////////////
-    public String Hash(String stringToHash)
+    public String Hash(String stringToHash, String userName) throws NoSuchAlgorithmException, InvalidKeySpecException
     {//hashing method - more secure way of storing passwords/logins than encryption because its one way function
-        //TODO - narazie jest MD5, ale lepszy jest ponoć "PBKDF2WithHmacSHA1"
+        int iterations = 1000;
+        int keyLength = 64*8;
+        char[] chars = stringToHash.toCharArray();
+        String salt = GetSalt(userName);
+        byte[] saltBytes = salt.getBytes();
+
+        PBEKeySpec spec = new PBEKeySpec(chars, saltBytes, iterations, keyLength);
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        byte[] hash = factory.generateSecret(spec).getEncoded();
+        return GetSalt(Integer.toString(((iterations-keyLength)*(iterations+keyLength))-saltBytes[0])).substring(0, 10)
+                +GetSalt(toHex(saltBytes)).substring(0,20)+toHex(hash);
+    }
+
+    private String GetSalt(String salt){
+        //MD5 hashing user login and treating it as salt
         MessageDigest digest;
         try
         {
             digest = MessageDigest.getInstance("MD5");
-            digest.update(stringToHash.getBytes(Charset.forName("US-ASCII")),0,stringToHash.length());
+            digest.update(salt.getBytes(Charset.forName("US-ASCII")),0,salt.length());
             byte[] magnitude = digest.digest();
             BigInteger bi = new BigInteger(1, magnitude);
             String hash = String.format("%0" + (magnitude.length << 1) + "x", bi);
@@ -175,7 +207,20 @@ public class LoginMain extends AppCompatActivity {
         {
             e.printStackTrace();
         }
-        return "";
+        return "BŁĄD KONWERTOWANIA LOGINU";
+    }
+
+    private static String toHex(byte[] array) throws NoSuchAlgorithmException
+    {
+        BigInteger bi = new BigInteger(1, array);
+        String hex = bi.toString(16);
+        int paddingLength = (array.length * 2) - hex.length();
+        if(paddingLength > 0)
+        {
+            return String.format("%0"  +paddingLength + "d", 0) + hex;
+        }else{
+            return hex;
+        }
     }
 ///////////////////////////////////////////////////////////////////
     public void temporaryCreateJson(String AdminLogin, String AdminPasswd, String UserLogin, String UserPasswd){

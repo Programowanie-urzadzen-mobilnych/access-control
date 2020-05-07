@@ -29,6 +29,11 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 //TODO - RZECZY DO POPRAWIENIA/DOROBIENIA/PÓŹNIEJSZEGO UŻYCIA
 public class ChangePassword extends AppCompatActivity {
@@ -72,6 +77,10 @@ public class ChangePassword extends AppCompatActivity {
                     );
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (InvalidKeySpecException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -86,7 +95,7 @@ public class ChangePassword extends AppCompatActivity {
         });
     }
 
-    private void validate(String oldLogin, String oldPassword, String newLogin, String newPassword, String confirmPassword) throws IOException {
+    private void validate(String oldLogin, String oldPassword, String newLogin, String newPassword, String confirmPassword) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         //method to validate if entered value are correct and if so, then update login information
         //parsing json to model in MyLoginModel
 
@@ -99,9 +108,9 @@ public class ChangePassword extends AppCompatActivity {
         readJsonFromFile(id);//TODO zrobić żeby jak nie ma dostępu do pliku (bo np user się rozłączył z czujnikiem ale
         //TODO nie wylogował to wtedy tworzy tymczasowy plik, który nadpisze plik z pasami kiedy użytkownik znowu się połączy)
 
-        oldPassword = Hash(oldPassword);
-        confirmPassword = Hash(confirmPassword);
-        newPassword = Hash(newPassword);
+        oldPassword = Hash(oldPassword, oldLogin);
+        newPassword = Hash(newPassword, newLogin);
+        confirmPassword = Hash(confirmPassword, newLogin);
 
         if((oldLogin.equals(sensorUSERLOGIN)) && (oldPassword.equals(sensorUSERPASSWORD))) {
             if(!newLogin.equals("") || !newPassword.equals("")){
@@ -163,15 +172,29 @@ public class ChangePassword extends AppCompatActivity {
         userADMIN_PASSWD= myModel.list.get(0).password_;
         userUSER_PASSWD = myModel.list.get(1).password_;
     }
+/////////////////////////////////////////
+    public String Hash(String stringToHash, String userName) throws NoSuchAlgorithmException, InvalidKeySpecException
+    {//hashing method - more secure way of storing passwords/logins than encryption because its one way function
+        int iterations = 1000;
+        int keyLength = 64*8;
+        char[] chars = stringToHash.toCharArray();
+        String salt = GetSalt(userName);
+        byte[] saltBytes = salt.getBytes();
 
-    public String Hash(String stringToHash){
-        //hashing method - more secure way of storing passwords/logins than encryption because its one way function
-        //TODO - narazie jest MD5, ale lepszy jest ponoć "PBKDF2WithHmacSHA1"
+        PBEKeySpec spec = new PBEKeySpec(chars, saltBytes, iterations, keyLength);
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        byte[] hash = factory.generateSecret(spec).getEncoded();
+        return GetSalt(Integer.toString(((iterations-keyLength)*(iterations+keyLength))-saltBytes[0])).substring(0, 10)+
+                GetSalt(toHex(saltBytes)).substring(0,20)+toHex(hash);
+    }
+
+    private String GetSalt(String salt){
+        //MD5 hashing user login and treating it as salt
         MessageDigest digest;
         try
         {
             digest = MessageDigest.getInstance("MD5");
-            digest.update(stringToHash.getBytes(Charset.forName("US-ASCII")),0,stringToHash.length());
+            digest.update(salt.getBytes(Charset.forName("US-ASCII")),0,salt.length());
             byte[] magnitude = digest.digest();
             BigInteger bi = new BigInteger(1, magnitude);
             String hash = String.format("%0" + (magnitude.length << 1) + "x", bi);
@@ -181,9 +204,22 @@ public class ChangePassword extends AppCompatActivity {
         {
             e.printStackTrace();
         }
-        return "";
+        return "BŁĄD KONWERTOWANIA LOGINU";
     }
 
+    private static String toHex(byte[] array) throws NoSuchAlgorithmException
+    {
+        BigInteger bi = new BigInteger(1, array);
+        String hex = bi.toString(16);
+        int paddingLength = (array.length * 2) - hex.length();
+        if(paddingLength > 0)
+        {
+            return String.format("%0"  +paddingLength + "d", 0) + hex;
+        }else{
+            return hex;
+        }
+    }
+/////////////////////////////////////////
     private void ChangeCredentials(int id, String newLogin, String newPassword) throws IOException {
         //method to update login information file - set new login and password
 
