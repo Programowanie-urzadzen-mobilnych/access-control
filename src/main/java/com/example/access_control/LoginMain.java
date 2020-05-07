@@ -182,6 +182,7 @@ public class LoginMain extends AppCompatActivity {
         int keyLength = 64*8;
         char[] chars = stringToHash.toCharArray();
         String salt = GetSalt(userName);
+        salt = salt.substring(0,28);
         byte[] saltBytes = salt.getBytes();
 
         PBEKeySpec spec = new PBEKeySpec(chars, saltBytes, iterations, keyLength);
