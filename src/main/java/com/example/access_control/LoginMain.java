@@ -2,6 +2,7 @@ package com.example.access_control;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -13,6 +14,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.gson.Gson;
+import com.representation.ThisApplication;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -123,14 +126,32 @@ public class LoginMain extends AppCompatActivity {
         userPassword = Hash(userPassword, userLogin);//thanks to this, we are comparing two hashes if they are equal
 
         if((userLogin.equals(sensorUSERLOGIN_ADMIN)) && (userPassword.equals(sensorUSERPASSWORD_ADMIN))){
-            Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
-            intent.putExtra("USER_ID",sensorUSERID_ADMIN);
-            startActivity(intent);
+            //Intent intent = new Intent(LoginMain.this, ThisApplication.class);
+            //intent.putExtra("USER_ID",sensorUSERID_ADMIN);
+            //startActivity(intent);
+            Intent data = new Intent();
+            //String text = "1";//ADMIN
+            data.putExtra("role",1);//ADMIN
+            //---set the data to pass back---
+            //data.setData(Uri.parse(text));
+            setResult(RESULT_OK, data);
+            //---close the activity---
+            finish();
+
         }
         else if((userLogin.equals(sensorUSERLOGIN))&&(userPassword.equals(sensorUSERPASSWORD))){
-            Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
-            intent.putExtra("USER_ID",sensorUSERID);
-            startActivity(intent);
+            //Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
+            //intent.putExtra("USER_ID",sensorUSERID);
+            //startActivity(intent);
+
+            Intent data = new Intent();
+            //String text = "2";//NORMAL_USER
+            data.putExtra("role",2);//NORMAL_USER
+            //---set the data to pass back---
+            //data.setData(Uri.parse(text));
+            setResult(RESULT_OK, data);
+            //---close the activity---
+            finish();
         }
         else{
             counter--;
