@@ -1,2 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.access_control" />
+    package="com.example.access_control">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <application>
+        <activity android:name=".ChangePassword"></activity>
+        <activity android:name=".TemporaryActivity" />
+        <activity android:name=".LoginMain" />
+    </application>
+
+</manifest>
