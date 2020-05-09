@@ -143,7 +143,6 @@ public class LoginMain extends AppCompatActivity {
             //Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
             //intent.putExtra("USER_ID",sensorUSERID);
             //startActivity(intent);
-
             Intent data = new Intent();
             //String text = "2";//NORMAL_USER
             data.putExtra("role",2);//NORMAL_USER
@@ -159,7 +158,6 @@ public class LoginMain extends AppCompatActivity {
             Toast.makeText(this, "Incorrect login or password", Toast.LENGTH_SHORT).show();
             if(counter==0)
             {//if user used all tries then block login button for X amount of time (currently 5 seconds)
-                //TODO zrobić żeby nawet po zamknięciu aplikacji i jej ponownym uruchomieniu nadal odliczało czas
                 Log_In.setEnabled(false);
                 Toast.makeText(this, "Login functionality is disabled for 5 seconds", Toast.LENGTH_LONG).show();
                 new Handler().postDelayed(new Runnable() {

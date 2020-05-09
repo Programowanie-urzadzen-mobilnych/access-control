@@ -88,9 +88,13 @@ public class ChangePassword extends AppCompatActivity {
         btnGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
-                intent.putExtra("USER_ID",USER_ID);
-                startActivity(intent);
+                //Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
+                //intent.putExtra("USER_ID",USER_ID);
+                //startActivity(intent);
+                Intent data = new Intent();
+                data.putExtra("role",USER_ID);
+                setResult(RESULT_OK, data);
+                finish();
             }
         });
     }
@@ -119,9 +123,13 @@ public class ChangePassword extends AppCompatActivity {
                     ChangeCredentials(id,newLogin, newPassword);
                     Toast.makeText(this, "Login information were changed",
                             Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
-                    intent.putExtra("USER_ID",USER_ID);
-                    startActivity(intent);
+                    //Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
+                    //intent.putExtra("USER_ID",USER_ID);
+                    //startActivity(intent);
+                    Intent data = new Intent();
+                    data.putExtra("role",USER_ID);
+                    setResult(RESULT_OK, data);
+                    finish();
                 }
                 else {
                     Toast.makeText(this, "New password and password confirmation are not the same",
