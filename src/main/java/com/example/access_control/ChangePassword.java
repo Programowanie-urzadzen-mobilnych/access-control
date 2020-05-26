@@ -1,6 +1,8 @@
 package com.example.access_control;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Context;
 import android.content.Intent;
@@ -48,6 +50,14 @@ public class ChangePassword extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
+
+        // Configure action bar
+        Toolbar actionbar = findViewById(R.id.change_password_action_bar);
+        actionbar.setTitle(getResources().getString(R.string.CHANGE_PASSWD));
+        setSupportActionBar(actionbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+        ab.setDisplayShowHomeEnabled(true);
 
         OldLogin = (EditText)findViewById(R.id.oldLogin);
         OldPassword = (EditText)findViewById(R.id.oldPassword);
@@ -120,12 +130,17 @@ public class ChangePassword extends AppCompatActivity {
         if((oldLogin.equals(sensorUSERLOGIN)) && (oldPassword.equals(sensorUSERPASSWORD))) {
             if(!newLogin.equals("") || !newPassword.equals("")){
                 if(newPassword.equals(confirmPassword)){
+
                     ChangeCredentials(id,newLogin, newPassword);
                     Toast.makeText(this, "Login information were changed",
                             Toast.LENGTH_SHORT).show();
-                    //Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
-                    //intent.putExtra("USER_ID",USER_ID);
-                    //startActivity(intent);
+
+                    /*
+                    Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
+                    intent.putExtra("USER_ID",USER_ID);
+                    startActivity(intent);
+                    */
+
                     Intent data = new Intent();
                     data.putExtra("role",USER_ID);
                     setResult(RESULT_OK, data);

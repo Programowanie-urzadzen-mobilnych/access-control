@@ -1,9 +1,14 @@
 package com.example.access_control;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.text.method.PasswordTransformationMethod;
@@ -39,6 +44,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -47,6 +53,13 @@ import javax.crypto.spec.PBEKeySpec;
 
 //TODO - RZECZY DO POPRAWIENIA/DOROBIENIA/PÓŹNIEJSZEGO UŻYCIA
 public class LoginMain extends AppCompatActivity {
+
+    private CountDownTimer mCountDownTimer;
+    private long LoginLockTime = 0;
+    private long SavedTime = 0;
+    private long LoginLockTimeSaved = 0;
+    private boolean mTimerRunning = false;
+    private boolean LoginLock = false;
 
     private String sensorUSERID_ADMIN="1", sensorUSERID="2";
     private String sensorUSERLOGIN_ADMIN="Admin", sensorUSERLOGIN="User",
@@ -58,22 +71,31 @@ public class LoginMain extends AppCompatActivity {
     private EditText Login;
     private EditText Password;
     private TextView AttemptsLeft;
+    private TextView LockTime;
     private Button Log_In;
-    private int counterConstant = 5,counter = counterConstant;//how many attempts are left to block login activity
+    private int counterConstant = 3,counter = counterConstant;//how many attempts are left to block login activity
     private ArrayList<HashMap<String, String>> formList;//used in readJSON() method
     HashMap<String, String> parsedData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_main);
+
+        // Configure action bar
+        Toolbar actionbar = findViewById(R.id.login_main_action_bar);
+        actionbar.setTitle(getResources().getString(R.string.LOGIN_MAIN));
+        setSupportActionBar(actionbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+        ab.setDisplayShowHomeEnabled(true);
+
 
         Login = (EditText) findViewById(R.id.editLogin);
         Password = (EditText) findViewById(R.id.editPassword);
         AttemptsLeft = (TextView) findViewById(R.id.textViewAttempts);
+        LockTime = (TextView) findViewById(R.id.DisplayLockTime);
         Log_In = (Button) findViewById(R.id.button_LogIn);
-        AttemptsLeft.setText("Number of attempts left: " + String.valueOf(counter));
 
         try {
             sensorUSERLOGIN_ADMIN = Hash(sensorUSERLOGIN_ADMIN, sensorUSERLOGIN_ADMIN);
@@ -126,9 +148,15 @@ public class LoginMain extends AppCompatActivity {
         userPassword = Hash(userPassword, userLogin);//thanks to this, we are comparing two hashes if they are equal
 
         if((userLogin.equals(sensorUSERLOGIN_ADMIN)) && (userPassword.equals(sensorUSERPASSWORD_ADMIN))){
-            //Intent intent = new Intent(LoginMain.this, ThisApplication.class);
-            //intent.putExtra("USER_ID",sensorUSERID_ADMIN);
-            //startActivity(intent);
+            CreateSessionJson("1");
+
+            /*
+            Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
+            intent.putExtra("USER_ID",sensorUSERID_ADMIN);
+            startActivity(intent);
+            */
+
+
             Intent data = new Intent();
             //String text = "1";//ADMIN
             data.putExtra("role",1);//ADMIN
@@ -138,11 +166,16 @@ public class LoginMain extends AppCompatActivity {
             //---close the activity---
             finish();
 
+
         }
         else if((userLogin.equals(sensorUSERLOGIN))&&(userPassword.equals(sensorUSERPASSWORD))){
-            //Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
-            //intent.putExtra("USER_ID",sensorUSERID);
-            //startActivity(intent);
+            CreateSessionJson("2");
+            /*
+            Intent intent = new Intent(LoginMain.this, TemporaryActivity.class);
+            intent.putExtra("USER_ID",sensorUSERID);
+            startActivity(intent);
+            */
+
             Intent data = new Intent();
             //String text = "2";//NORMAL_USER
             data.putExtra("role",2);//NORMAL_USER
@@ -151,6 +184,7 @@ public class LoginMain extends AppCompatActivity {
             setResult(RESULT_OK, data);
             //---close the activity---
             finish();
+
         }
         else{
             counter--;
@@ -158,7 +192,7 @@ public class LoginMain extends AppCompatActivity {
             Toast.makeText(this, "Incorrect login or password", Toast.LENGTH_SHORT).show();
             if(counter==0)
             {//if user used all tries then block login button for X amount of time (currently 5 seconds)
-                Log_In.setEnabled(false);
+                /*Log_In.setEnabled(false);
                 Toast.makeText(this, "Login functionality is disabled for 5 seconds", Toast.LENGTH_LONG).show();
                 new Handler().postDelayed(new Runnable() {
 
@@ -169,9 +203,84 @@ public class LoginMain extends AppCompatActivity {
                         counter = counterConstant;
                         AttemptsLeft.setText("Number of attempts left: "+String.valueOf(counter));
                     }
-                },5000);// set time as per your requirement
+                },5000);// set time as per your requirement*/
+                StartTimer();
             }
         }
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.putLong("millisLeft", LoginLockTimeSaved);
+        editor.putBoolean("timerRunning", mTimerRunning);
+        //editor.putLong("endTime", LoginLockTime);
+        editor.putLong("endTime",SavedTime-1000);
+        editor.apply();
+
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+
+        mTimerRunning = prefs.getBoolean("timerRunning", false);
+        //UpdateTimer();
+        if (mTimerRunning)
+        {
+            LoginLockTimeSaved = prefs.getLong("millisLeft", 6000);
+            LoginLockTime = prefs.getLong("endTime", 6000);
+            LoginLockTimeSaved = LoginLockTime - System.currentTimeMillis();
+            //LoginLock =  prefs.getBoolean("LoginLock", true);
+            LoginLockTime=(LoginLockTime-5000)/2;
+            StartTimer();
+        }
+    }
+    private void UpdateTimer()
+    {
+        int minutes = (int) (LoginLockTimeSaved / 1000) / 60;
+        int seconds = (int) (LoginLockTimeSaved / 1000) % 60;
+
+        String timeLeftFormatted = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
+
+        LockTime.setText(timeLeftFormatted);
+    }
+
+    private void StartTimer()
+    {
+        LoginLockTime=(LoginLockTime*2)+5000;
+        LoginLockTimeSaved = LoginLockTime;
+        Log_In.setEnabled(false);
+        mTimerRunning = true;
+        Toast.makeText(this, "Login functionality is disabled for "+ LoginLockTime/1000 +" seconds", Toast.LENGTH_SHORT).show();
+        mCountDownTimer = new CountDownTimer(LoginLockTimeSaved+1000, 1000)
+        { //Set Timer
+            public void onTick(long millisUntilFinished)
+            {
+                LoginLockTimeSaved = millisUntilFinished;
+                SavedTime = millisUntilFinished;
+                UpdateTimer();
+            }
+            @Override
+            public void onFinish() {
+                Log_In.setEnabled(true);
+                counter = counterConstant;
+                // AttemptsLeft.setText("Number of attempts left: "+String.valueOf(counter));
+                LockTime.setText("");
+                AttemptsLeft.setText("");
+                mTimerRunning = false;
+            }
+        }.start();
     }
 
     /* Checks if external storage is available for read and write */
@@ -246,6 +355,34 @@ public class LoginMain extends AppCompatActivity {
         }
     }
 ///////////////////////////////////////////////////////////////////
+    public void CreateSessionJson(String UserID)
+    {
+        String certificate = "";
+        if(UserID == "1")
+            certificate = "Privileged_User";
+        else if(UserID == "2")
+            certificate = "Normal_User";
+        File file = new File(this.getFilesDir(), "session_information.json");
+        String filename = "session_information.json";
+        String fileContents = "{\n" +
+                "  \"Session_Info:\":\n" +
+                "  [\n" +
+                "    {\n" +
+                "      \"Certificate\": \""+certificate+"\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        FileOutputStream outputStream;
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(fileContents.getBytes());
+            outputStream.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void temporaryCreateJson(String AdminLogin, String AdminPasswd, String UserLogin, String UserPasswd){
     //TODO TYMCZASOWA METODA DO ROBIENIA PLIKU JSON (PRZY PIERWSZYM URUCHOMIENIU PROGRAMU (TAKIM PIERWSZYM PIERWSZYM - POTEM
         // TODO KIEDY URUCHAMIASZ ZNOWU TO PLIK BEDZIE ISTNIAL I SIE NIE WYKONA) DOPÓKI NIE BEDZIE ZROBIONY SYMULATOR

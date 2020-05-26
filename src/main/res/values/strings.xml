@@ -1,1 +1,11 @@
-<resources></resources>
+<resources>
+    <string name="app_name">Smart River</string>
+    <string name="AUTHORIZATION">Autoryzacja</string>
+    <string name="UPDATE_FIRMWARE">Aktualizacja firmware</string>
+    <string name="SETTINGS">Ustawienia</string>
+    <string name="MAIN_MENU">Menu główne</string>
+    <string name="LOGIN_MAIN">Logowanie</string>
+    <string name="CHANGE_PASSWD">Zmiana hasła</string>
+    <string name="NO_CONNCTION_TO_THE_MEASURING_NODE">Brak połączenia z węzłem pomiarowym</string>
+    <string name="CONNECT">Połącz</string>
+</resources>
