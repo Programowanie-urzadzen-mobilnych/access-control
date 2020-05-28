@@ -189,7 +189,8 @@ public class LoginMain extends AppCompatActivity {
         else{
             counter--;
             AttemptsLeft.setText("Number of attempts left: "+String.valueOf(counter));
-            Toast.makeText(this, "Incorrect login or password", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Incorrect login or password", Toast.LENGTH_SHORT).show();
+            ELogin.loginError(this);
             if(counter==0)
             {//if user used all tries then block login button for X amount of time (currently 5 seconds)
                 /*Log_In.setEnabled(false);
