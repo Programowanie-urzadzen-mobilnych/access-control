@@ -19,7 +19,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.gson.Gson;
+<<<<<<< HEAD
 //import com.representation.ThisApplication;
+=======
+import com.representation.ThisApplication;
+>>>>>>> 4e1dbdc1ad89c03a136a02ea17bbcc13f344b908
 
 import org.json.JSONArray;
 import org.json.JSONException;
