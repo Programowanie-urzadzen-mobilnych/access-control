@@ -153,8 +153,9 @@ public class ChangePassword extends AppCompatActivity {
                     finish();
                 }
                 else {
-                    Toast.makeText(this, "New password and password confirmation are not the same",
-                            Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "New password and password confirmation are not the same",
+                    //        Toast.LENGTH_SHORT).show();
+                    EPasswordChange.passwordsAreNotTheSame(this);
                 }
             }
             else{
@@ -163,12 +164,14 @@ public class ChangePassword extends AppCompatActivity {
             }
         }
         else if(!oldLogin.equals(sensorUSERLOGIN)){
-            Toast.makeText(this, "Old login was not provided or entered value was incorrect",
-                    Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Old login was not provided or entered value was incorrect",
+            //        Toast.LENGTH_SHORT).show();
+            EPasswordChange.oldLoginNotProvidedWrong(this);
         }
         else if(!oldPassword.equals(sensorUSERPASSWORD)){
-            Toast.makeText(this, "Old password was not provided or entered value was incorrect",
-                    Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Old password was not provided or entered value was incorrect",
+            //        Toast.LENGTH_SHORT).show();
+            EPasswordChange.oldPasswordNotProvidedWrong(this);
         }
     }
 
