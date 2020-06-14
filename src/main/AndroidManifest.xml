@@ -4,7 +4,11 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <application>
-        <activity android:name=".ChangePassword"></activity>
+        <activity android:name=".ChangePassword">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="layouts.LayoutsList" />
+        </activity>
         <activity android:name=".TemporaryActivity" />
         <activity android:name=".LoginMain" />
     </application>

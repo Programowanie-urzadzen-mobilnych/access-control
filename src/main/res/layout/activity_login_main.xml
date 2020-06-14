@@ -6,6 +6,12 @@
     android:layout_height="match_parent"
     tools:context=".LoginMain">
 
+    <include
+        android:id="@+id/login_main_action_bar"
+        layout="@layout/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <EditText
         android:id="@+id/editLogin"
         android:layout_width="wrap_content"
@@ -46,12 +52,23 @@
 
     <TextView
         android:id="@+id/textViewAttempts"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Number of attempts left: "
+        android:layout_width="213dp"
+        android:layout_height="19dp"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_LogIn"
-        app:layout_constraintVertical_bias="0.196" />
+        app:layout_constraintVertical_bias="0.154" />
+
+    <TextView
+        android:id="@+id/DisplayLockTime"
+        android:layout_width="213dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/textViewAttempts"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_LogIn" />
 </androidx.constraintlayout.widget.ConstraintLayout>
