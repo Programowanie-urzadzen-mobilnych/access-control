@@ -77,6 +77,7 @@ public class LoginMain extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
+        EndSession();
         Login = (EditText) findViewById(R.id.editLogin);
         Password = (EditText) findViewById(R.id.editPassword);
         AttemptsLeft = (TextView) findViewById(R.id.textViewAttempts);
@@ -102,6 +103,7 @@ public class LoginMain extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        EndSession();
         Login = (EditText) findViewById(R.id.editLogin);
         Password = (EditText) findViewById(R.id.editPassword);
         AttemptsLeft = (TextView) findViewById(R.id.textViewAttempts);
@@ -128,7 +130,7 @@ public class LoginMain extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_main);
-
+        EndSession();
         // Configure action bar
         Toolbar actionbar = findViewById(R.id.login_main_action_bar);
         actionbar.setTitle(getResources().getString(R.string.LOGIN_MAIN));
@@ -414,6 +416,29 @@ public class LoginMain extends AppCompatActivity {
                 "    {\n" +
                 "      \"ID\": \""+UserID+"\",\n" +
                 "      \"Certificate\": \""+certificate+"\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        FileOutputStream outputStream;
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(fileContents.getBytes());
+            outputStream.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void EndSession(){
+        String certificate = "";
+        File file = new File(this.getFilesDir(), "session_information.json");
+        String filename = "session_information.json";
+        String fileContents = "{\n" +
+                "  \"Session_Info:\":\n" +
+                "  [\n" +
+                "    {\n" +
+                "      \"ID\": \""+0+"\",\n" +
+                "      \"Certificate\": \"No_User\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}";
