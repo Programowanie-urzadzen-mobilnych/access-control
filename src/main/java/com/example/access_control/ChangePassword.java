@@ -47,6 +47,11 @@ public class ChangePassword extends AppCompatActivity {
     private String USER_ID;
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
@@ -65,7 +70,7 @@ public class ChangePassword extends AppCompatActivity {
         NewPassword = (EditText)findViewById(R.id.newPassword);
         NewPasswordConfirmation = (EditText)findViewById(R.id.newPassword2);
         btnChangePassword = (Button)findViewById(R.id.buttonChangeLoginInformation);
-        btnGoBack = (Button)findViewById(R.id.buttonGoBack);
+        //btnGoBack = (Button)findViewById(R.id.buttonGoBack);
 
         USER_ID = getIntent().getStringExtra("USER_ID");
         txtView = (TextView)findViewById(R.id.txtUserID);
@@ -94,7 +99,7 @@ public class ChangePassword extends AppCompatActivity {
                 }
             }
         });
-
+        /*
         btnGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,6 +112,7 @@ public class ChangePassword extends AppCompatActivity {
                 finish();
             }
         });
+        */
     }
 
     private void validate(String oldLogin, String oldPassword, String newLogin, String newPassword, String confirmPassword) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {

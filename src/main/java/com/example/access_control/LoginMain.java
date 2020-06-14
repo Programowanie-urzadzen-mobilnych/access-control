@@ -64,9 +64,6 @@ public class LoginMain extends AppCompatActivity {
     private String sensorUSERID_ADMIN="1", sensorUSERID="2";
     private String sensorUSERLOGIN_ADMIN="Admin", sensorUSERLOGIN="User",
             sensorUSERPASSWORD_ADMIN="Admin",sensorUSERPASSWORD="User";
-    //TODO dopóki się z niczym nie łączymy - trzeba dodać
-    //TODO jeszcze szyfrowanie i nie porównywać bezpośrednio plaintext, ale to już inna funkcjonalność w gancie :P
-    //TODO niżej przypisujemy z modelu MyLoginModel wartości do tych zmiennych
 
     private EditText Login;
     private EditText Password;
@@ -76,6 +73,56 @@ public class LoginMain extends AppCompatActivity {
     private int counterConstant = 3,counter = counterConstant;//how many attempts are left to block login activity
     private ArrayList<HashMap<String, String>> formList;//used in readJSON() method
     HashMap<String, String> parsedData;
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Login = (EditText) findViewById(R.id.editLogin);
+        Password = (EditText) findViewById(R.id.editPassword);
+        AttemptsLeft = (TextView) findViewById(R.id.textViewAttempts);
+        LockTime = (TextView) findViewById(R.id.DisplayLockTime);
+        Log_In = (Button) findViewById(R.id.button_LogIn);
+
+        Log_In.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    validate(Login.getText().toString(), Password.getText().toString());
+                } catch (InvalidKeySpecException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+                //isExternalStorageReadable();
+                //isExternalStorageWritable();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Login = (EditText) findViewById(R.id.editLogin);
+        Password = (EditText) findViewById(R.id.editPassword);
+        AttemptsLeft = (TextView) findViewById(R.id.textViewAttempts);
+        LockTime = (TextView) findViewById(R.id.DisplayLockTime);
+        Log_In = (Button) findViewById(R.id.button_LogIn);
+
+        Log_In.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    validate(Login.getText().toString(), Password.getText().toString());
+                } catch (InvalidKeySpecException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+                //isExternalStorageReadable();
+                //isExternalStorageWritable();
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +146,7 @@ public class LoginMain extends AppCompatActivity {
 
         try {
             sensorUSERLOGIN_ADMIN = Hash(sensorUSERLOGIN_ADMIN, sensorUSERLOGIN_ADMIN);
-            sensorUSERPASSWORD_ADMIN = Hash(sensorUSERPASSWORD_ADMIN, sensorUSERLOGIN_ADMIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
+            sensorUSERPASSWORD_ADMIN = Hash(sensorUSERPASSWORD_ADMIN, sensorUSERLOGIN_ADMIN);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeySpecException e) {
@@ -107,14 +154,13 @@ public class LoginMain extends AppCompatActivity {
         }
         try {
             sensorUSERLOGIN = Hash(sensorUSERLOGIN, sensorUSERLOGIN);
-            sensorUSERPASSWORD = Hash(sensorUSERPASSWORD, sensorUSERLOGIN);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie hashuje zadeklarowane stringi
+            sensorUSERPASSWORD = Hash(sensorUSERPASSWORD, sensorUSERLOGIN);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
         }
-        temporaryCreateJson(sensorUSERLOGIN_ADMIN,sensorUSERPASSWORD_ADMIN,sensorUSERLOGIN,sensorUSERPASSWORD);//TODO zakomentować gdy uzyskamy dostęp do czujnika - narazie tworzy plik na "sztywno" z danymi logowania
-
+        temporaryCreateJson(sensorUSERLOGIN_ADMIN,sensorUSERPASSWORD_ADMIN,sensorUSERLOGIN,sensorUSERPASSWORD);
         ////////////////////////////////parsing json to model in MyLoginModel
         //readJSON();
         /*String myJson=inputStreamToString(this.getResources().openRawResource(R.raw.login_information));//reading json file
@@ -165,8 +211,6 @@ public class LoginMain extends AppCompatActivity {
             setResult(RESULT_OK, data);
             //---close the activity---
             finish();
-
-
         }
         else if((userLogin.equals(sensorUSERLOGIN))&&(userPassword.equals(sensorUSERPASSWORD))){
             CreateSessionJson("2");
@@ -184,7 +228,6 @@ public class LoginMain extends AppCompatActivity {
             setResult(RESULT_OK, data);
             //---close the activity---
             finish();
-
         }
         else{
             counter--;
@@ -369,6 +412,7 @@ public class LoginMain extends AppCompatActivity {
                 "  \"Session_Info:\":\n" +
                 "  [\n" +
                 "    {\n" +
+                "      \"ID\": \""+UserID+"\",\n" +
                 "      \"Certificate\": \""+certificate+"\"\n" +
                 "    }\n" +
                 "  ]\n" +
