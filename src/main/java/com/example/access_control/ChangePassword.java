@@ -135,11 +135,13 @@ public class ChangePassword extends AppCompatActivity {
 
         if((oldLogin.equals(sensorUSERLOGIN)) && (oldPassword.equals(sensorUSERPASSWORD))) {
             if(!newLogin.equals("") || !newPassword.equals("")){
-                if(newPassword.equals(confirmPassword)){
+                if((id == 0 && !newLogin.equals(userUSER_LOG))||(id == 1 && !newLogin.equals(userADMIN_LOG)))//
+                {
+                    if(newPassword.equals(confirmPassword)){
 
-                    ChangeCredentials(id,newLogin, newPassword);
-                    Toast.makeText(this, "Login information were changed",
-                            Toast.LENGTH_SHORT).show();
+                        ChangeCredentials(id,newLogin, newPassword);
+                        Toast.makeText(this, "Login information were changed",
+                                Toast.LENGTH_SHORT).show();
 
                     /*
                     Intent intent = new Intent(ChangePassword.this, TemporaryActivity.class);
@@ -147,15 +149,19 @@ public class ChangePassword extends AppCompatActivity {
                     startActivity(intent);
                     */
 
-                    Intent data = new Intent();
-                    data.putExtra("role",USER_ID);
-                    setResult(RESULT_OK, data);
-                    finish();
+                        Intent data = new Intent();
+                        data.putExtra("role",USER_ID);
+                        setResult(RESULT_OK, data);
+                        finish();
+                    }
+                    else {
+                        //Toast.makeText(this, "New password and password confirmation are not the same",
+                        //        Toast.LENGTH_SHORT).show();
+                        EPasswordChange.passwordsAreNotTheSame(this);
+                    }
                 }
-                else {
-                    //Toast.makeText(this, "New password and password confirmation are not the same",
-                    //        Toast.LENGTH_SHORT).show();
-                    EPasswordChange.passwordsAreNotTheSame(this);
+                else{
+                    Toast.makeText(this, "Username taken",Toast.LENGTH_SHORT).show();
                 }
             }
             else{
